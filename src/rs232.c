@@ -111,13 +111,13 @@ RS232_DATA rs232Data;
   Remarks:
     See prototype in rs232.h.
  */
-
+static DRV_HANDLE handleUSART0;
+static uint8_t app_tx_buf[] = "*** UART Application Example ***\r\n*** Type a character and observe the LED turn ON ***\r\n\r\n";
+static int crt = 0;
 void RS232_Initialize ( void )
 {
-    /* Place the App state machine in its initial state. */
-    rs232Data.state = RS232_STATE_INIT;
 
-    
+    handleUSART0 = DRV_USART_Open(0, DRV_IO_INTENT_READWRITE|DRV_IO_INTENT_BLOCKING);
     /* TODO: Initialize your application's state machine and other
      * parameters.
      */
@@ -131,10 +131,24 @@ void RS232_Initialize ( void )
   Remarks:
     See prototype in rs232.h.
  */
-
+char c[3];
 void RS232_Tasks ( void )
 {
 
+    if(!DRV_USART_ReceiverBufferIsEmpty(handleUSART0))
+    {
+          c[0] = DRV_USART_ReadByte(handleUSART0); //DRV_USART0_ReadByte();
+          printf("%c",c[0]);
+    }
+    
+    if(!DRV_USART_TransmitBufferIsFull(handleUSART0))
+    {
+        DRV_USART_WriteByte(handleUSART0, app_tx_buf[crt]);
+                    crt++;
+                    if (crt>app_tx_buf)
+                    {crt=0;}
+                }
+    
     LED3Toggle();
 }
 
